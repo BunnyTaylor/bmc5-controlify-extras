@@ -1,0 +1,17 @@
+{
+  "input": {
+    "radial_menu": {
+      "actions": [
+        "fabric-key-binding-api-v1:gui.xaero_open_map",
+        "fabric-key-binding-api-v1:accessories.key.open_accessories_screen",
+        "fabric-key-binding-api-v1:key.backpacked.open_backpack",
+        "fabric-key-binding-api-v1:key.accessorify.open_ender_chest",
+        "fabric-key-binding-api-v1:gui.xaero_waypoints_key",
+        "fabric-key-binding-api-v1:key.pingwheel.ping_location",
+        "fabric-key-binding-api-v1:gui.xaero_new_waypoint",
+        "fabric-key-binding-api-v1:key.accessorify.open_widget"
+      ],
+      "button_focus_timeout_ticks": 20
+    }
+  }
+}

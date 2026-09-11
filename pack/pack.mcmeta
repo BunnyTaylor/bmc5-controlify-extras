@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "BMC5 Controlify Extras — radial menu + paddle binds for Better MC 5",
+    "pack_format": 34,
+    "supported_formats": { "min_inclusive": 15, "max_inclusive": 99 }
+  }
+}
