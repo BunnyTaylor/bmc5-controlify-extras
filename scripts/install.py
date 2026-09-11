@@ -29,8 +29,8 @@ import time
 import zipfile
 from pathlib import Path
 
-PACK_NAME = "BMC5-Controlify-Extras.zip"
-PACK_ENTRY = f"file/{PACK_NAME}"
+MAIN_PACK = ("pack", "BMC5-Controlify-Extras.zip")
+DRAGON_PACK = ("pack-dragons", "BMC5-Controlify-Dragons.zip")
 
 # Screens that are drawn by hand rather than out of vanilla widgets. Controlify
 # can't tab-navigate these, so they need the virtual mouse cursor instead.
@@ -75,10 +75,10 @@ def resolve_instance(raw: Path) -> Path:
     sys.exit(f"error: no options.txt found under {raw} — is that the instance folder?")
 
 
-def build_pack(repo: Path, dry: bool) -> Path:
-    """Zip pack/ into dist/. Stored at the archive root, as Minecraft expects."""
-    src = repo / "pack"
-    out = repo / "dist" / PACK_NAME
+def build_pack(repo: Path, src_dir: str, zip_name: str, dry: bool) -> Path:
+    """Zip a pack dir into dist/. Stored at the archive root, as Minecraft expects."""
+    src = repo / src_dir
+    out = repo / "dist" / zip_name
     if dry:
         log(f"would build {out}")
         return out
@@ -95,31 +95,32 @@ def install_pack(zip_path: Path, mc: Path, dry: bool) -> None:
     dest_dir = mc / "resourcepacks"
     if not dry:
         dest_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(zip_path, dest_dir / PACK_NAME)
-    log(f"installed pack -> resourcepacks/{PACK_NAME}")
+        shutil.copy2(zip_path, dest_dir / zip_path.name)
+    log(f"installed pack -> resourcepacks/{zip_path.name}")
 
 
-def enable_pack(mc: Path, dry: bool) -> None:
+def enable_pack(mc: Path, zip_name: str, dry: bool) -> None:
     """Append our entry to the resourcePacks list, last = highest priority.
 
     Edited as a string rather than re-serialised, so the rest of the line keeps
     whatever escaping Minecraft wrote (e.g. \\u0027 for apostrophes).
     """
+    entry = f"file/{zip_name}"
     opts = mc / "options.txt"
     lines = opts.read_text(encoding="utf-8").splitlines(keepends=True)
     changed = False
     for i, line in enumerate(lines):
         if not line.startswith("resourcePacks:"):
             continue
-        if PACK_ENTRY in line:
-            log("pack already enabled in options.txt")
+        if entry in line:
+            log(f"{zip_name} already enabled in options.txt")
             return
         stripped = line.rstrip("\n")
         if not stripped.endswith("]"):
             log("! resourcePacks line looks unusual — enable the pack manually")
             return
         sep = "" if stripped.endswith("[]") else ","
-        lines[i] = f'{stripped[:-1]}{sep}"{PACK_ENTRY}"]\n'
+        lines[i] = f'{stripped[:-1]}{sep}"{entry}"]\n'
         changed = True
         break
     if not changed:
@@ -128,7 +129,7 @@ def enable_pack(mc: Path, dry: bool) -> None:
     if not dry:
         backup(opts, dry)
         opts.write_text("".join(lines), encoding="utf-8")
-    log("enabled pack in options.txt (last = highest priority)")
+    log(f"enabled {zip_name} in options.txt (last = highest priority)")
 
 
 def patch_controlify(mc: Path, dry: bool) -> None:
@@ -176,6 +177,8 @@ def patch_deck_keys(mc: Path, dry: bool) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Install BMC5 Controlify Extras.")
     ap.add_argument("instance", type=Path, help="instance folder (or its minecraft/ dir)")
+    ap.add_argument("--dragons", action="store_true",
+                    help="also install the Dragon Mounts add-on pack (see README)")
     ap.add_argument("--deck", action="store_true",
                     help="also remap 4 actions to free numpad keys for Steam Deck back buttons")
     ap.add_argument("--dry-run", action="store_true", help="show changes without writing")
@@ -186,9 +189,11 @@ def main() -> None:
     dry = args.dry_run
 
     print(f"Instance: {mc}{'  (dry run)' if dry else ''}\n")
-    print("Resource pack:")
-    install_pack(build_pack(repo, dry), mc, dry)
-    enable_pack(mc, dry)
+    print("Resource packs:")
+    packs = [MAIN_PACK] + ([DRAGON_PACK] if args.dragons else [])
+    for src_dir, zip_name in packs:  # order matters: dragons must load after main
+        install_pack(build_pack(repo, src_dir, zip_name, dry), mc, dry)
+        enable_pack(mc, zip_name, dry)
     print("\nControlify global config:")
     patch_controlify(mc, dry)
     if args.deck:

@@ -24,8 +24,9 @@ decompiled evidence are in [docs/FINDINGS.md](docs/FINDINGS.md).
 ## Install
 
 ```sh
-scripts/install.py "<instance folder>"          # desktop / 8BitDo
-scripts/install.py "<instance folder>" --deck   # Steam Deck (see below)
+scripts/install.py "<instance folder>"             # desktop / 8BitDo
+scripts/install.py "<instance folder>" --deck      # Steam Deck (see below)
+scripts/install.py "<instance folder>" --dragons   # + Dragon Mounts add-on
 ```
 
 Add `--dry-run` first if you want to see the changes without writing anything.
@@ -103,6 +104,30 @@ Software — set them to their own dedicated outputs, or SDL sees the face butto
 See [docs/STEAM-DECK.md](docs/STEAM-DECK.md) for why, and for the Steam Input
 workaround that `--deck` sets up.
 
+## Optional: Dragon Mounts add-on
+
+Dragon Mounts Remastered ships `Descend`, `Dismount` and `Dragon Command Menu`
+unbound, and there are no buttons left. The add-on pack exploits the fact that
+**two Controlify bindings may share one input** — the config screen only paints
+sharers red, it never blocks them, and at runtime both fire.
+
+That only *helps* when the two actions can't both be live. `Call Dragon` works
+when you're on foot; `Descend` works when you're flying one. They're mutually
+exclusive in the mod's own logic, so they can share a paddle safely:
+
+| Input | On foot | While riding |
+| --- | --- | --- |
+| R5 (`right_paddle_2`) | Call Dragon | Descend |
+
+It frees R5 by unbinding the world map there (`"type": "empty"`) — the map is
+still radial slot 0, so nothing is actually lost. Install with `--dragons`; it
+loads *after* the main pack, so its overrides win.
+
+**Don't pair `Descend` with jump.** Jump is ascend while mounted, so they'd
+fight each other — the pairing has to be foot-state against flight-state, not
+two flight actions. `Dismount` needs no binding at all: vanilla sneak already
+dismounts.
+
 ## Customising
 
 Everything is editable in-game: **Controlify settings → your controller →
@@ -125,6 +150,16 @@ So `gui.xaero_open_map` becomes
 `fabric-key-binding-api-v1:gui.xaero_open_map`. Translation keys are the
 `key_*` entries in the instance's `options.txt`. (The `fabric-` namespace is
 not a typo — Controlify uses it on NeoForge too.)
+
+## Modrinth
+
+Both packs are built into `dist/` ready to upload. See
+[docs/MODRINTH.md](docs/MODRINTH.md) for the project settings, listing copy and
+the publish script.
+
+On a modpack without these mods nothing breaks: a radial slot naming a missing
+binding logs a warning and renders empty, and a default bind for an
+unregistered keybind is never looked up.
 
 ## Uninstall
 
