@@ -3,7 +3,7 @@
     "fabric-key-binding-api-v1:justzoom.keybinds.keybind.zoom": {
       "button": "controlify:button/left_paddle_1"
     },
-    "fabric-key-binding-api-v1:gui.xaero_new_waypoint": {
+    "fabric-key-binding-api-v1:key.veinmining.activate.desc": {
       "button": "controlify:button/left_paddle_2"
     },
     "fabric-key-binding-api-v1:key.backpacked.open_backpack": {

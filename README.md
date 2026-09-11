@@ -54,15 +54,20 @@ Press **D-Pad Right** (Controlify's default) and flick the **right stick**:
 
 ```
                      ↑   Xaero World Map
-   Accessorify   ↖         ↗   Accessories Screen
+   Waypoint List ↖         ↗   Accessories Screen
     New Waypoint ←    ( ● )    →  Open Backpack
            Ping  ↙         ↘   Ender Chest
-                     ↓   Waypoint List
+                     ↓   Quest Book
 ```
 
 The four most-used actions sit on the cardinal directions, which are far easier
 to hit than the diagonals. **Open Backpack** is the Backpacked keybind, so it
 opens the pack you're *wearing* — no unequipping, no hotbar shuffle.
+
+**Quest Book** is FTB Quests' `Open Quests`, which ships **unbound** in BMC5 —
+so in a quest-driven pack the quest log had no key at all, on controller *or*
+keyboard. Its screen is an `ftblibrary.ui.BaseScreen`, which the installer
+already adds to the virtual-mouse list, so it's navigable once opened.
 
 ## Paddles
 
@@ -71,12 +76,20 @@ If your controller exposes paddles, these are bound automatically:
 | Paddle | Action |
 | --- | --- |
 | L4 (`left_paddle_1`) | Zoom — hold (JustZoom) |
-| L5 (`left_paddle_2`) | New waypoint |
+| L5 (`left_paddle_2`) | Vein mining — hold |
 | R4 (`right_paddle_1`) | Open backpack |
 | R5 (`right_paddle_2`) | Open world map |
 
-Zoom is a *hold*, which a radial menu can't do — that's why it lives on a
-paddle rather than in the menu.
+Zoom and vein mining are *holds*, which a radial menu can't do — that's why
+they live on paddles. Map and backpack are on paddles **as well as** in the
+radial, because they're frequent enough to deserve an instant button.
+
+**Vein Mining was inert before this.** Its config sets
+`activationState = "HOLD_KEY_DOWN"` while the keybind shipped unbound, so the
+mod could not be triggered at all — the mod's own warning string is *"Vein
+mining key is unbound, set a key binding to enable controls."* Binding a paddle
+fixes it. On a pad with no paddles, bind it in Controlify by hand or give it a
+key in Options → Controls; the radial can't host it because it's a hold.
 
 **8BitDo Ultimate 2 Wireless:** SDL only ships paddle mappings for this pad on
 Windows/macOS — there is no Linux entry in Controlify's bundled database, only

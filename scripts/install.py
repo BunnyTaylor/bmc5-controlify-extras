@@ -46,7 +46,7 @@ VIRTUAL_MOUSE_SCREENS = [
 # keybinds in BMC5 v52 (Jade uses numpad 0-5, Xaero uses numpad +).
 DECK_KEYS = {
     "key_justzoom.keybinds.keybind.zoom": "key.keyboard.keypad.6",   # L4 hold = zoom
-    "key_gui.xaero_new_waypoint":         "key.keyboard.keypad.7",   # L5 = new waypoint
+    "key_key.veinmining.activate.desc":   "key.keyboard.keypad.7",   # L5 hold = vein mine
     "key_key.backpacked.open_backpack":   "key.keyboard.keypad.8",   # R4 = backpack
     "key_gui.xaero_open_map":             "key.keyboard.keypad.9",   # R5 = world map
 }

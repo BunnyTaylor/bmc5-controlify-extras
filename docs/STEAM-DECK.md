@@ -50,12 +50,12 @@ scripts/install.py "<instance folder>" --deck
 
 That moves four actions onto numpad keys that nothing else in BMC5 uses
 (verified against all 218 keybinds — Jade holds numpad 0-5, Xaero holds
-numpad +):
+numpad +), matching the paddle layout so muscle memory carries across devices:
 
 | Key | Action |
 | --- | --- |
 | Numpad 6 | Zoom (hold) |
-| Numpad 7 | New waypoint |
+| Numpad 7 | Vein mining (hold) |
 | Numpad 8 | Open backpack |
 | Numpad 9 | Open world map |
 
