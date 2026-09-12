@@ -46,10 +46,31 @@ defaults win over every other pack), and adds the virtual-mouse screen classes
 to `config/controlify.json`. Every file it edits is backed up alongside the
 original as `*.bak-<timestamp>`.
 
-Prefer to do it by hand? Drag `dist/BMC5-Controlify-Extras.zip` into
-`resourcepacks/` and enable it in **Options → Resource Packs**. You'll just
-miss the virtual-mouse fix, which lives in the global config rather than the
-pack.
+**Close Minecraft first.** Controlify rewrites `controlify.json` when the game
+exits, so edits made while it's running are lost.
+
+### Copying the zip in by hand isn't enough
+
+Two things the zip alone can't do:
+
+1. **Enable it.** A pack sitting in `resourcepacks/` is inert until you switch
+   it on in **Options → Resource Packs**.
+2. **Change a radial menu you've already got.** Controlify only reads
+   `default_config` from `ProfileSettings.createDefault()` — it seeds a profile
+   for a controller it has never seen. Once a profile exists in `profiles[]` in
+   `controlify.json`, it keeps its stored `input.radial_menu.actions` forever.
+   So on any instance you've already played, the radial stays stock.
+
+The installer handles both, rewriting `input.radial_menu.actions` in every saved
+profile (`--keep-radial` opts out). By hand, set the eight slots yourself via
+**Controlify settings → your controller → Radial Menu → CONFIGURE**.
+
+**Paddle bindings are not affected** by this — a bind equal to its default is
+dropped from the saved config, so the pack's binds resolve from the defaults at
+load time and do apply to an existing profile.
+
+The virtual-mouse fix also lives in the global config rather than in the pack,
+so it likewise needs the installer or a manual edit.
 
 ## The radial menu
 

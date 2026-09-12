@@ -132,23 +132,55 @@ def enable_pack(mc: Path, zip_name: str, dry: bool) -> None:
     log(f"enabled {zip_name} in options.txt (last = highest priority)")
 
 
-def patch_controlify(mc: Path, dry: bool) -> None:
+def patch_controlify(repo: Path, mc: Path, dry: bool, keep_radial: bool) -> None:
+    """Edit config/controlify.json: virtual-mouse screens, and the saved radial.
+
+    The radial list needs patching because `default_config` is only consulted by
+    ProfileSettings.createDefault() — it seeds a profile for a controller
+    Controlify has never seen. Once a profile exists in `profiles[]` it keeps its
+    stored `input.radial_menu.actions`, so dropping the pack in does nothing to
+    an instance you have already played.
+
+    Bindings are different: a bind equal to its default is dropped from the saved
+    config (InputBindingImpl), so the pack's paddle binds do apply on their own.
+    """
     cfg = mc / "config" / "controlify.json"
     if not cfg.exists():
         log("! config/controlify.json not found — launch the game once, then re-run")
         return
     data = json.loads(cfg.read_text(encoding="utf-8"))
+    notes: list[str] = []
+
     screens = data.setdefault("global", {}).setdefault("virtual_mouse_screens", [])
     added = [s for s in VIRTUAL_MOUSE_SCREENS if s not in screens]
-    if not added:
-        log("virtual-mouse screens already present")
-        return
     screens.extend(added)
+    notes += [f"virtual mouse enabled for {s}" for s in added]
+    if not added:
+        notes.append("virtual-mouse screens already present")
+
+    if keep_radial:
+        notes.append("left the saved radial menu alone (--keep-radial)")
+    else:
+        src = repo / MAIN_PACK[0] / "assets/controlify/controllers/default_config/default.json"
+        actions = json.loads(src.read_text(encoding="utf-8"))["input"]["radial_menu"]["actions"]
+        profiles = data.get("profiles") or []
+        if not profiles:
+            notes.append("no saved controller profile yet — the pack will seed it on first connect")
+        else:
+            changed = 0
+            for prof in profiles:
+                radial = prof.setdefault("input", {}).setdefault("radial_menu", {})
+                if radial.get("actions") != actions:
+                    radial["actions"] = actions
+                    changed += 1
+            notes.append(f"radial menu updated in {changed} of {len(profiles)} saved profile(s)"
+                         if changed else "saved radial menu already matches the pack")
+
     if not dry:
         backup(cfg, dry)
         cfg.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    for s in added:
-        log(f"virtual mouse enabled for {s}")
+    for n in notes:
+        log(n)
 
 
 def patch_deck_keys(mc: Path, dry: bool) -> None:
@@ -177,6 +209,8 @@ def patch_deck_keys(mc: Path, dry: bool) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Install BMC5 Controlify Extras.")
     ap.add_argument("instance", type=Path, help="instance folder (or its minecraft/ dir)")
+    ap.add_argument("--keep-radial", action="store_true",
+                    help="don't touch an already-saved radial menu")
     ap.add_argument("--dragons", action="store_true",
                     help="also install the Dragon Mounts add-on pack (see README)")
     ap.add_argument("--deck", action="store_true",
@@ -194,12 +228,13 @@ def main() -> None:
     for src_dir, zip_name in packs:  # order matters: dragons must load after main
         install_pack(build_pack(repo, src_dir, zip_name, dry), mc, dry)
         enable_pack(mc, zip_name, dry)
-    print("\nControlify global config:")
-    patch_controlify(mc, dry)
+    print("\nControlify config:")
+    patch_controlify(repo, mc, dry, args.keep_radial)
     if args.deck:
         print("\nSteam Deck keybinds:")
         patch_deck_keys(mc, dry)
-    print("\nDone. Restart Minecraft (or press F3+T) to load the pack.")
+    print("\nDone. Close Minecraft before running this — Controlify rewrites")
+    print("controlify.json on exit and would overwrite these edits.")
 
 
 if __name__ == "__main__":
