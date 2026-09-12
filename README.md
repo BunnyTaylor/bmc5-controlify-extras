@@ -71,20 +71,45 @@ load time and do apply to an existing profile.
 
 ### "There's no Resource Packs button"
 
-BMC5 ships a FancyMenu layout that **hides the Resource Packs button** on the
-Options screen — you get an empty slot in the grid where it should be (4th row,
-left, under Language). With it hidden there is no in-game way to enable a
-resource pack at all.
+Not BMC5 hiding it on purpose — an accident, and it only happens on some
+installs.
 
-The installer un-hides it (`--keep-menu` opts out). By hand, in
-`config/fancymenu/customization/options_screen_layout.txt`, change the single
-`is_hidden = true` to `false` — keep the file's CRLF line endings.
+FancyMenu identifies vanilla buttons by **screen position**: in
+`options_screen_layout.txt` every `instance_identifier` is literally
+`(x + 73) || y`. BMC5's layout hides whatever sits at one particular spot
+(`x=273, y=187`, the bottom-left of the options grid).
+
+Any mod that adds a row to the Options screen shifts everything below it down
+24px, and that stored position then points at a *different* button. **Physics
+Mod** does exactly this — it injects a full-width "Physics Settings…" row via
+`MixinOptionsScreen`:
+
+```
+without Physics Mod          with Physics Mod
+  y=91   skin|sounds           y=91   PHYSICS SETTINGS (full width)
+  y=115  video|controls        y=115  skin|sounds
+  y=139  language|chat         y=139  video|controls
+  y=163  resourcepack|access   y=163  language|chat
+  y=187  credits    <-- hidden y=187  resourcepack|access  <-- hidden
+                               y=211  credits
+```
+
+So with Physics Mod installed the hide lands on **Resource Packs**; without it,
+it lands on the harmless button BMC5 presumably meant. That's why the same pack
+shows the button on one machine and not another — it depends on which mods you
+added, not on the pack version.
+
+The installer flips that single `is_hidden` to `false` (`--keep-menu` opts out),
+which simply stops the layout hiding anything. By hand, edit
+`config/fancymenu/customization/options_screen_layout.txt` and keep the file's
+CRLF line endings — a plain `sed 's/is_hidden = true$//'` matches nothing,
+because `$` sits behind the `\r`.
 
 That file is a pack override, so **an update re-hides it**; re-run the installer
 afterwards.
 
-(Telemetry Data is missing too, but for an unrelated reason — the game doesn't
-add that button here, which is why Credits & Attribution sits on the left.)
+(Telemetry Data is missing for an unrelated reason: the game doesn't add that
+button here at all, which is why the grid is five rows rather than six.)
 
 ### No terminal? Do all of it in-game
 
