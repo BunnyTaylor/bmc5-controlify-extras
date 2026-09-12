@@ -7,6 +7,8 @@ Steam controller profile to a keyboard-mapping layout.
 Built and verified against the exact versions in the pack:
 Minecraft **1.21.1**, NeoForge **21.1.234**, Controlify **3.0.1+lts**.
 
+![The radial menu, preloaded with the BMC5 essentials](media/radial-menu.png)
+
 ## What it fixes
 
 | Problem | Fix |
@@ -71,6 +73,8 @@ keyboard. Its screen is an `ftblibrary.ui.BaseScreen`, which the installer
 already adds to the virtual-mouse list, so it's navigable once opened.
 
 ## Paddles
+
+![Paddle bindings](media/paddles.png)
 
 If your controller exposes paddles, these are bound automatically:
 
