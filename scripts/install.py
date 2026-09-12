@@ -189,6 +189,33 @@ def patch_controlify(repo: Path, mc: Path, dry: bool, keep_radial: bool) -> None
         log(n)
 
 
+def unhide_resourcepacks(mc: Path, dry: bool) -> None:
+    """Un-hide the Resource Packs button on the Options screen.
+
+    BMC5 ships a FancyMenu layout that hides it, which leaves an empty slot in
+    the options grid and no in-game way to enable a resource pack at all. The
+    file is a pack override, so an update re-hides it and this has to be re-run.
+
+    The file is CRLF; edits keep it that way, since FancyMenu wrote it.
+    """
+    layout = mc / "config/fancymenu/customization/options_screen_layout.txt"
+    if not layout.is_file():
+        log("! options_screen_layout.txt not found — skipping")
+        return
+    raw = layout.read_bytes()
+    hidden = raw.count(b"is_hidden = true\r\n")
+    if hidden == 0:
+        log("Resource Packs button already visible")
+        return
+    if hidden > 1:
+        log(f"! {hidden} hidden buttons in the options layout — not guessing, skipping")
+        return
+    if not dry:
+        backup(layout, dry)
+        layout.write_bytes(raw.replace(b"is_hidden = true\r\n", b"is_hidden = false\r\n"))
+    log("un-hid the Resource Packs button on the Options screen")
+
+
 def patch_deck_keys(mc: Path, dry: bool) -> None:
     opts = mc / "options.txt"
     lines = opts.read_text(encoding="utf-8").splitlines(keepends=True)
@@ -215,6 +242,8 @@ def patch_deck_keys(mc: Path, dry: bool) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description="Install BMC5 Controlify Extras.")
     ap.add_argument("instance", type=Path, help="instance folder (or its minecraft/ dir)")
+    ap.add_argument("--keep-menu", action="store_true",
+                    help="don't un-hide the Resource Packs button")
     ap.add_argument("--keep-radial", action="store_true",
                     help="don't touch an already-saved radial menu")
     ap.add_argument("--dragons", action="store_true",
@@ -236,6 +265,9 @@ def main() -> None:
         enable_pack(mc, zip_name, dry)
     print("\nControlify config:")
     patch_controlify(repo, mc, dry, args.keep_radial)
+    if not args.keep_menu:
+        print("\nOptions screen:")
+        unhide_resourcepacks(mc, dry)
     if args.deck:
         print("\nSteam Deck keybinds:")
         patch_deck_keys(mc, dry)

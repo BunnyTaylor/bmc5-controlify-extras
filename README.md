@@ -69,12 +69,30 @@ profile (`--keep-radial` opts out). By hand, set the eight slots yourself via
 dropped from the saved config, so the pack's binds resolve from the defaults at
 load time and do apply to an existing profile.
 
+### "There's no Resource Packs button"
+
+BMC5 ships a FancyMenu layout that **hides the Resource Packs button** on the
+Options screen — you get an empty slot in the grid where it should be (4th row,
+left, under Language). With it hidden there is no in-game way to enable a
+resource pack at all.
+
+The installer un-hides it (`--keep-menu` opts out). By hand, in
+`config/fancymenu/customization/options_screen_layout.txt`, change the single
+`is_hidden = true` to `false` — keep the file's CRLF line endings.
+
+That file is a pack override, so **an update re-hides it**; re-run the installer
+afterwards.
+
+(Telemetry Data is missing too, but for an unrelated reason — the game doesn't
+add that button here, which is why Credits & Attribution sits on the left.)
+
 ### No terminal? Do all of it in-game
 
 Nothing here actually requires the installer — handy on a Steam Deck in Gaming
 Mode, where dropping to a shell means leaving the session.
 
-1. **Enable the pack.** In-game **Options → Resource Packs**, move
+1. **Enable the pack.** In-game **Options → Resource Packs** (un-hide the
+   button first — see above), move
    *BMC5 Controlify Extras* to the selected side, **Done**. (A launcher's
    resource-pack tab only lists the folder; it does not enable anything.)
 2. **Set the radial.** **Controlify settings → your controller → Radial Menu →
