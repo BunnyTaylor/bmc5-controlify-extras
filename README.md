@@ -69,8 +69,29 @@ profile (`--keep-radial` opts out). By hand, set the eight slots yourself via
 dropped from the saved config, so the pack's binds resolve from the defaults at
 load time and do apply to an existing profile.
 
-The virtual-mouse fix also lives in the global config rather than in the pack,
-so it likewise needs the installer or a manual edit.
+### No terminal? Do all of it in-game
+
+Nothing here actually requires the installer — handy on a Steam Deck in Gaming
+Mode, where dropping to a shell means leaving the session.
+
+1. **Enable the pack.** In-game **Options → Resource Packs**, move
+   *BMC5 Controlify Extras* to the selected side, **Done**. (A launcher's
+   resource-pack tab only lists the folder; it does not enable anything.)
+2. **Set the radial.** **Controlify settings → your controller → Radial Menu →
+   CONFIGURE**, then pick the eight slots. Tedious once, permanent after.
+3. **Turn on the virtual mouse where you need it.** Open Xaero's map, or the
+   FTB quest book, and press the **virtual-mouse toggle** — `vmouse_toggle`,
+   which defaults to the **Back / View** button (⧉ on a Deck). You'll get a
+   *"Virtual mouse is now enabled for this screen"* toast, and it is **saved**:
+   the handler adds the screen's class to `virtual_mouse_screens` and calls
+   `ConfigManager.saveSafely()`. Do it once per screen and it sticks.
+
+   The same button changes perspective during play — that's not a clash. The two
+   bindings carry different `BindContext`s, so the in-game one fires in the
+   world and the toggle fires on a screen.
+
+The installer just does these three things for you, plus the Steam Input
+keybinds under `--deck`.
 
 ## The radial menu
 
