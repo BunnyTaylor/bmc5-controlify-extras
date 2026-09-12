@@ -48,28 +48,32 @@ Run the installer on your Deck's instance with `--deck`:
 scripts/install.py "<instance folder>" --deck
 ```
 
-That moves four actions onto numpad keys that nothing else in BMC5 uses
-(verified against all 218 keybinds — Jade holds numpad 0-5, Xaero holds
-numpad +), matching the paddle layout so muscle memory carries across devices:
+That moves three actions onto the only unused single letters in BMC5 —
+`g`, `j`, `n`, verified against all 218 keybinds. The world map is left alone:
+it already sits on `m`, the sole binding using that key.
 
-| Key | Action |
-| --- | --- |
-| Numpad 6 | Zoom (hold) |
-| Numpad 7 | Vein mining (hold) |
-| Numpad 8 | Open backpack |
-| Numpad 9 | Open world map |
+| Key | Action | Keybind change |
+| --- | --- | --- |
+| `G` | Zoom (hold) | moved off `z`, which three mods share |
+| `J` | Vein mining (hold) | was unbound entirely |
+| `N` | Open backpack | moved off `b`, which five mods share |
+| `M` | Open world map | none — already unique |
+
+**Letters rather than the numpad.** With NumLock off the OS sends navigation
+keysyms instead of `KP_*`, and a Deck driving a virtual keyboard through Steam
+Input is exactly where that goes wrong. Letters have no such ambiguity.
 
 Then, in **Gaming Mode** (not Desktop Mode):
 
 1. Launch Prism → gamepad icon → **Controller Settings**.
 2. Keep the existing gamepad template. Don't switch to a keyboard layout.
 3. **Back Grip Buttons** → assign, leaving every other input untouched:
-   - L4 → `Numpad 6`
-   - L5 → `Numpad 7`
-   - R4 → `Numpad 8`
-   - R5 → `Numpad 9`
+   - L4 → `G`
+   - L5 → `J`
+   - R4 → `N`
+   - R5 → `M`
 
-Why dedicated numpad keys rather than the defaults? In BMC5 `B` is bound by
+Why move them off their defaults? In BMC5 `B` is bound by
 five different mods at once (Backpacked, Xaero's new-waypoint, Inmis, Tom's
 Storage, Deeper Darker) and `Z` by three. A keyboard key fires *every* mod bound
 to it, so pressing `B` would open a backpack *and* drop a waypoint. Controlify's

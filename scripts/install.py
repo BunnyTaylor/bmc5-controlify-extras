@@ -42,13 +42,19 @@ VIRTUAL_MOUSE_SCREENS = [
     "dev.ftb.mods.ftblibrary.ui.BaseScreen",       # FTB Quests book
 ]
 
-# Deck back buttons -> unused numpad keys. Verified free against all 218
-# keybinds in BMC5 v52 (Jade uses numpad 0-5, Xaero uses numpad +).
+# Deck back buttons -> free, unambiguous letter keys. Verified against all 218
+# keybinds in BMC5 v52: g, j and n are the only unused single letters.
+#
+# Letters, not the numpad: with NumLock off an OS sends navigation keysyms
+# rather than KP_*, and a Deck driving a virtual keyboard through Steam Input is
+# exactly where that bites.
+#
+# The world map is deliberately absent — it is on `m`, the only binding using
+# that key, so R5 can send `m` directly and the keybind needs no change.
 DECK_KEYS = {
-    "key_justzoom.keybinds.keybind.zoom": "key.keyboard.keypad.6",   # L4 hold = zoom
-    "key_key.veinmining.activate.desc":   "key.keyboard.keypad.7",   # L5 hold = vein mine
-    "key_key.backpacked.open_backpack":   "key.keyboard.keypad.8",   # R4 = backpack
-    "key_gui.xaero_open_map":             "key.keyboard.keypad.9",   # R5 = world map
+    "key_justzoom.keybinds.keybind.zoom": "key.keyboard.g",   # L4 hold = zoom (off contested `z`)
+    "key_key.veinmining.activate.desc":   "key.keyboard.j",   # L5 hold = vein mine (was unbound)
+    "key_key.backpacked.open_backpack":   "key.keyboard.n",   # R4 = backpack (off contested `b`)
 }
 
 STAMP = time.strftime("%Y%m%d-%H%M%S")
