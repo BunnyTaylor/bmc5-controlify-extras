@@ -31,6 +31,43 @@ LOADERS = ["minecraft"]
 GAME_VERSIONS = ["1.21.1"]
 
 
+def resolve_project(ident: str, token: str | None, dry: bool) -> str:
+    """Turn a slug into the base62 project id the version endpoint requires.
+
+    `project_id` must be a base62 id (e.g. "AABBccdd"); a slug with hyphens is
+    rejected with "Invalid character '-' in base62 encoding". Drafts are not
+    publicly readable, so this lookup needs the token too.
+    """
+    headers = {"User-Agent": UA}
+    if token:
+        headers["Authorization"] = token
+    try:
+        r = requests.get(f"{API}/project/{ident}", headers=headers, timeout=30)
+    except requests.RequestException as e:
+        if dry:
+            print(f"  (offline, keeping '{ident}' as-is: {e})")
+            return ident
+        sys.exit(f"error: could not reach Modrinth: {e}")
+
+    if r.status_code == 404:
+        msg = (f"error: no project '{ident}' visible to this token.\n"
+               "  - Create it first at https://modrinth.com/dashboard/projects\n"
+               "  - Check the slug matches the project's URL exactly\n"
+               "  - Drafts are only visible with a token, so set MODRINTH_TOKEN")
+        if dry and not token:
+            print(f"  (not found unauthenticated — it may be a draft; keeping '{ident}')")
+            return ident
+        sys.exit(msg)
+    if not r.ok:
+        sys.exit(f"error: project lookup failed: HTTP {r.status_code}\n{r.text}")
+
+    d = r.json()
+    if d.get("project_type") != "resourcepack":
+        print(f"  ! project_type is '{d.get('project_type')}', expected 'resourcepack'")
+    print(f"  resolved '{ident}' -> {d['id']}  (status: {d.get('status')})")
+    return d["id"]
+
+
 def main() -> None:
     repo = Path(__file__).resolve().parent.parent
     ap = argparse.ArgumentParser(description="Publish a version to Modrinth.")
@@ -64,6 +101,9 @@ def main() -> None:
         if not f.is_file():
             sys.exit(f"error: {f} not found")
 
+    print(f"Project : {args.project}")
+    project_id = resolve_project(args.project, token, args.dry_run)
+
     changelog = args.changelog or f"See the release notes for {version}."
     data = {
         "name": f"v{version}",
@@ -74,12 +114,11 @@ def main() -> None:
         "version_type": args.type,
         "loaders": LOADERS,
         "featured": True,
-        "project_id": args.project,
+        "project_id": project_id,
         "file_parts": [f.name for f in files],
         "primary_file": files[0].name,
     }
 
-    print(f"Project : {args.project}")
     print(f"Version : {version} ({args.type})")
     print(f"MC      : {', '.join(args.game_versions)}")
     print("Files   :")
@@ -100,6 +139,7 @@ def main() -> None:
     if not r.ok:
         sys.exit(f"\nupload failed: HTTP {r.status_code}\n{r.text}")
     print(f"\nPublished: https://modrinth.com/resourcepack/{args.project}/version/{version}")
+    print("If the project is still a draft, submit it for review from the dashboard.")
 
 
 if __name__ == "__main__":
