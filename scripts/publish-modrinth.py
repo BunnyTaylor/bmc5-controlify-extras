@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -38,6 +39,13 @@ def resolve_project(ident: str, token: str | None, dry: bool) -> str:
     rejected with "Invalid character '-' in base62 encoding". Drafts are not
     publicly readable, so this lookup needs the token too.
     """
+    # An 8-char alphanumeric ident already *is* a base62 id, so skip the lookup.
+    # That matters: a token scoped only to "Create versions" cannot read
+    # projects, and the lookup would 404 even though the upload would succeed.
+    if re.fullmatch(r"[0-9A-Za-z]{8}", ident):
+        print(f"  '{ident}' is already a base62 id, skipping lookup")
+        return ident
+
     headers = {"User-Agent": UA}
     if token:
         headers["Authorization"] = token
@@ -49,11 +57,18 @@ def resolve_project(ident: str, token: str | None, dry: bool) -> str:
             return ident
         sys.exit(f"error: could not reach Modrinth: {e}")
 
-    if r.status_code == 404:
-        msg = (f"error: no project '{ident}' visible to this token.\n"
-               "  - Create it first at https://modrinth.com/dashboard/projects\n"
-               "  - Check the slug matches the project's URL exactly\n"
-               "  - Drafts are only visible with a token, so set MODRINTH_TOKEN")
+    if r.status_code in (401, 403, 404):
+        msg = (f"error: could not read project '{ident}' (HTTP {r.status_code}).\n"
+               "  Most likely the token lacks the 'Read projects' scope — a token\n"
+               "  scoped only to 'Create versions' cannot look a project up, and\n"
+               "  drafts are not publicly readable either.\n\n"
+               "  Fix it either way:\n"
+               "  - Pass the project's base62 id instead of its slug (Settings ->\n"
+               "    the id shown on the project page) — no lookup needed, so the\n"
+               "    'Create versions' scope alone is enough; or\n"
+               "  - Reissue the PAT with 'Read projects' ticked as well.\n"
+               "  - If the project genuinely does not exist yet, create it at\n"
+               "    https://modrinth.com/dashboard/projects")
         if dry and not token:
             print(f"  (not found unauthenticated — it may be a draft; keeping '{ident}')")
             return ident

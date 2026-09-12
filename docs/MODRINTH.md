@@ -36,10 +36,27 @@ pack, or Modrinth users will wonder why Xaero's map still isn't navigable.
 ## Publishing a version
 
 ```sh
-export MODRINTH_TOKEN=mrp_...        # Settings -> PATs, scope: Create versions
+export MODRINTH_TOKEN=mrp_...   # scopes: Create versions AND Read projects
 scripts/publish-modrinth.py --project bmc5-controlify-extras --dry-run
 scripts/publish-modrinth.py --project bmc5-controlify-extras
 ```
+
+**Both scopes matter.** The upload needs *Create versions*, but the script must
+first turn the slug into a base62 id (`POST /v2/version` rejects a slug with
+`Invalid character '-' in base62 encoding`), and that lookup needs *Read
+projects*. A token with only *Create versions* gets 401 on `/v2/user` and 404
+on the project — which is indistinguishable from the project not existing.
+
+To avoid the read scope entirely, pass the **base62 id** instead of the slug;
+the script detects an 8-character alphanumeric argument and skips the lookup:
+
+```sh
+scripts/publish-modrinth.py --project AbCdEfGh
+```
+
+A brand-new project is a **draft**: invisible to non-maintainers and to
+unauthenticated lookups, and it cannot be submitted for review until it has at
+least one version. So the order is create -> upload a version -> submit.
 
 It uploads everything in `dist/`, with the main pack as the primary file and
 the dragons add-on as a secondary. Bump `VERSION` first.
