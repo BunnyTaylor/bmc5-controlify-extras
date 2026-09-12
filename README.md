@@ -240,6 +240,34 @@ So `gui.xaero_open_map` becomes
 `key_*` entries in the instance's `options.txt`. (The `fabric-` namespace is
 not a typo — Controlify uses it on NeoForge too.)
 
+## Keeping a server-pinned mod, but disabling one broken mixin
+
+`scripts/disable-mixin.py` removes a single mixin from a mod jar without
+touching its declared `version`, so a server still sees the same mod and the
+handshake is unaffected. It refuses on signed jars, warns if the mixin is not
+client-only, backs the jar up, and restores it if verification fails.
+
+The case it was written for: BMC5 pins **Supplementaries 3.5.34**, whose
+`compat.CompatEMFMixin` injects against an EMF constructor that gained an
+`EMFModelPartRoot` parameter back in EMF 3.2. The mixin fails to apply the
+moment EMF builds a custom model — which is exactly when **Fresh Animations** is
+enabled — and the failed apply throws mid-resource-reload, so the reload aborts
+and Minecraft silently reverts your resource-pack selection.
+
+Upstream fixed it in Supplementaries 3.6.0, but **3.7.x+ declares Sodium
+`[0,0.8.12-beta.1)` incompatible** and BMC5 ships Sodium 0.6.13, so anything
+newer refuses to launch. And updating at all desyncs you from a server pinned to
+3.5.34. Since the mixin is in the config's **client** section it cannot affect
+registries or server behaviour, so dropping it is the surgical fix:
+
+```sh
+scripts/disable-mixin.py "<instance>/minecraft/mods/supplementaries-1.21-3.5.34-neoforge.jar" \
+    supplementaries-common.mixins.json compat.CompatEMFMixin
+```
+
+`--list` shows every mixin in a jar. A pack update restores the stock jar, so
+re-run it afterwards.
+
 ## Modrinth
 
 Both packs are built into `dist/` ready to upload. See
